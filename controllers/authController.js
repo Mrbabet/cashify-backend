@@ -85,13 +85,16 @@ const login = async (req, res) => {
 };
 
 const logout = async (req, res) => {
-  const { id } = req.user;
   try {
-    await User.findByIdAndUpdate(
-      id,
-      { accessToken: null, refreshToken: null },
-      { new: true }
-    );
+    const userId = req.user._id;
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(401).json({ message: "Not authorized" });
+    }
+
+    user.accessToken = null;
+    user.refreshToken = null
+    await user.save();
 
     res.status(201).json({ message: "Logout successful" });
   } catch (error) {
@@ -103,28 +106,27 @@ const refreshToken = async (req, res, next) => {
   const refreshToken = req.headers.authorization;
 
   if (!refreshToken) {
-    res.status(401).json({ message: "Refresh token is required" });
+    return res.status(401).json({ message: "Refresh token is required" });
   }
   const splitToken = refreshToken.split(" ")[1];
-  jwt.verify(splitToken, process.env.REFRESH_TOKEN_SECRET),
-    async (err, decodedToken) => {
-      if (err) {
-        return res.status(403).json({ message: "Invalid token" });
-      }
-      const user = await User.findOne({ _id: decodedToken.id });
-      if (!user) {
-        return res.status(401).json({ message: "No such User" });
-      }
-      const payload = { id: user._id, email: user.email };
+  jwt.verify(splitToken, process.env.REFRESH_TOKEN_SECRET, async (err, decodedToken) => {
+    if (err) {
+      return res.status(403).json({ message: "Invalid token" });
+    }
+    const user = await User.findOne({ _id: decodedToken.id });
+    if (!user) {
+      return res.status(401).json({ message: "No such User" });
+    }
+    const payload = { id: user._id, email: user.email };
 
-      const accessToken = jwt.sign(payload, process.env.SECRET_KEY, {
-        expiresIn: "20s",
-      });
-      const refreshToken = jwt.sign(payload, process.env.REFRESH_TOKEN_SECRET, {
-        expiresIn: "7d",
-      });
-      return { accessToken, refreshToken };
-    };
+    const accessToken = jwt.sign(payload, process.env.SECRET_KEY, {
+      expiresIn: "20s",
+    });
+    const newRefreshToken = jwt.sign(payload, process.env.REFRESH_TOKEN_SECRET, {
+      expiresIn: "7d",
+    });
+    res.status(201).json({ message: "Token refreshed", accessToken, refreshToken: newRefreshToken });
+  });
 };
 
 module.exports = {

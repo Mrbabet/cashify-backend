@@ -1,0 +1,193 @@
+{
+  "openapi": "3.0.1",
+  "info": {
+    "version": "1.0.0",
+    "title": "cashify",
+    "description": "cashify-api",
+    "license": {
+      "name": "MIT",
+      "url": "https://opensource.org/licenses/MIT"
+    }
+  },
+  "servers": [
+    {
+      "url": "http://localhost:8000"
+    }
+  ],
+  "tags": [
+    {
+      "name": "Auth",
+      "description": "Authorization endpoints"
+    },
+    {
+      "name": "Transactions",
+      "description": "Transactions endpoints"
+    }
+  ],
+  "components": {
+    "schemas": {
+      "RegisterRequest": {
+        "type": "object",
+        "properties": {
+          "username": { "type": "string" },
+          "password": { "type": "string" }
+        }
+      }
+    }
+  },
+  "paths": {
+    "/users/register": {
+      "post": {
+        "tags": ["Auth"],
+        "summary": "User registration",
+        "parameters": [],
+        "requestBody": {
+          "description": "Register's object",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegisterRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "User registration was successful, a verification email was sent to you",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RegisterResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "The email is already taken by another user, try logging in",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RegisterError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "auth/login":{"post": {
+      "tags": ["Auth"],
+      "summary": "User login",
+      "parameters": [],
+      "requestBody": {
+        "description": "Logins's object",
+        "required": true,
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/RegisterRequest"
+            }
+          }
+        }
+      },
+      "responses": {
+        "201": {
+          "description": "User registration was successful, a verification email was sent to you",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegisterResponse"
+              }
+            }
+          }
+        },
+        "409": {
+          "description": "The email is already taken by another user, try logging in",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegisterError"
+              }
+            }
+          }
+        }
+      }
+    }},
+    "auth/logout":{"post": {
+      "tags": ["Auth"],
+      "summary": "User registration",
+      "parameters": [],
+      "requestBody": {
+        "description": "Register's object",
+        "required": true,
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/RegisterRequest"
+            }
+          }
+        }
+      },
+      "responses": {
+        "201": {
+          "description": "User registration was successful, a verification email was sent to you",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegisterResponse"
+              }
+            }
+          }
+        },
+        "409": {
+          "description": "The email is already taken by another user, try logging in",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegisterError"
+              }
+            }
+          }
+        }
+      }
+    }},
+    "auth/refresh":{"post": {
+      "tags": ["Auth"],
+      "summary": "User registration",
+      "parameters": [],
+      "requestBody": {
+        "description": "Register's object",
+        "required": true,
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/RegisterRequest"
+            }
+          }
+        }
+      },
+      "responses": {
+        "201": {
+          "description": "User registration was successful, a verification email was sent to you",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegisterResponse"
+              }
+            }
+          }
+        },
+        "409": {
+          "description": "The email is already taken by another user, try logging in",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegisterError"
+              }
+            }
+          }
+        }
+      }
+    }}
+  }}
