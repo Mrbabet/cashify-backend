@@ -21,7 +21,7 @@ router.post(
   ctrlWrapper(ctrlTransactions.addExpense)
 );
 router.get("/expense", auth, ctrlWrapper(ctrlTransactions.getExpense));
-router.delete("transaction", auth);
+router.delete("/remove", auth, ctrlWrapper(ctrlTransactions.deleteTransaction));
 router.get("transaction/income-categories", auth);
 router.get("transaction/expense-categories", auth);
 router.get("transaction/period-data", auth);

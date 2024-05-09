@@ -80,9 +80,38 @@ const getIncome = async (req, res, next) => {
   });
 };
 
-const deleteTransaction = async function () {};
+const deleteTransaction = async function (req, res) {
+  const user = await Transaction.findById({ _id, userId });
+  if (!user || user.length < 1) return false;
+
+  const deleteTransaction = Transaction.findByIdAndDelete(_id);
+
+  if (deleteTransaction) {
+    const balance = req.user.balance;
+    const newBalance =
+      balance +
+      deleteTransaction.amount *
+        (deleteTransaction.transactionType === "expense" ? 1 : -1);
+
+    await User.findByIdAndUpdate(req.user._id, { balance: newBalance });
+
+    return res.status(200).json({
+      status: "success",
+      code: 200,
+      data: { deleteTransaction },
+      message: "Object deleted",
+    });
+  }
+  return res.json({ status: "error", code: 404, message: "Not found" });
+};
 
 const getIncomeCategories = async function () {};
 const getTransactionsTimeData = async function () {};
 
-module.exports = { addIncome, addExpense, getIncome, getExpense };
+module.exports = {
+  addIncome,
+  addExpense,
+  getIncome,
+  getExpense,
+  deleteTransaction,
+};
