@@ -5,6 +5,7 @@ const transactionSchema = Joi.object({
   description: Joi.string().required(),
   amount: Joi.number().min(1).required(),
   category: Joi.string().required(),
+  transactionType: Joi.string().required(),
   // userId: Joi.string().required(),
 });
 

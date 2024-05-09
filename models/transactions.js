@@ -17,9 +17,27 @@ const transactionSchema = Schema({
   category: {
     type: String,
     required: [true, "Choose category"],
-    enum: [],
+    enum: [
+      "products",
+      "alcohol",
+      "entertainment",
+      "health",
+      "transport",
+      "housing",
+      "technique",
+      "communal communication",
+      "sport, hobbies",
+      "education",
+      "other",
+      "salary",
+      "additional income",
+    ],
   },
-
+  transactionType: {
+    type: String,
+    required: true,
+    enum: ["expense", "income"],
+  },
   userId: {
     type: Schema.Types.ObjectId,
     ref: "user",

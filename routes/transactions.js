@@ -13,14 +13,14 @@ router.post(
   validation(transactionSchema),
   ctrlWrapper(ctrlTransactions.addIncome)
 );
-router.get("transaction/income", auth);
+router.get("/income", auth, ctrlWrapper(ctrlTransactions.getIncome));
 router.post(
   "/expense",
   auth,
   validation(transactionSchema),
   ctrlWrapper(ctrlTransactions.addExpense)
 );
-router.get("transaction/expense", auth);
+router.get("/expense", auth, ctrlWrapper(ctrlTransactions.getExpense));
 router.delete("transaction", auth);
 router.get("transaction/income-categories", auth);
 router.get("transaction/expense-categories", auth);
