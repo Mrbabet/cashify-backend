@@ -1,49 +1,33 @@
-const { Schema, model } = require('mongoose');
+const { Schema, model } = require("mongoose");
 
-const transactionSchema = new Schema(
-  {
-    operation: {
-      type: String,
-      required: true,
-    },
-    description: {
-      type: String,
-      required: true,
-    },
-    category: {
-      type: String,
-      required: true,
-    },
-    sum: {
-      type: Number,
-      required: true,
-    },
-    date: {
-      type: String,
-      required: true,
-    },
-    month: {
-      type: String,
-      required: true,
-    },
-    year: {
-      type: String,
-      required: true,
-    },
-    currency: {
-      type: String,
-      required: true,
-    },
-    userId: {
-      type: Schema.Types.ObjectId,
-      ref: 'user',
-    
-    },
+const transactionSchema = Schema({
+  date: {
+    type: String,
+    required: true,
   },
-  { versionKey: false, timestamps: true }
-);
+  description: {
+    type: String,
+    required: [true, "Describe expense"],
+  },
+  amount: {
+    type: Number,
+    required: [true, "Insert the amount"],
+    min: 0,
+  },
+  category: {
+    type: String,
+    required: [true, "Choose category"],
+    enum: [],
+  },
 
-const Transaction = model('transaction', transactionSchema);
+  userId: {
+    type: Schema.Types.ObjectId,
+    ref: "user",
+    required: true,
+  },
+});
+
+const Transaction = model("transaction", transactionSchema);
 
 module.exports = {
   Transaction,

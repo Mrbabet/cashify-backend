@@ -1,55 +1,52 @@
-const {Transaction} = require('../models/transactions')
-const {User} = require('../models/user')
+const { Transaction } = require("../models/transactions");
+const { User } = require("../models/user");
 
-const addIncome = async (req, res) => {
-    try {
-      // Create a new transaction using the data from the request body
-      const transaction = await Transaction.create(req.body);
-  
-      // Find the user by their ID
-      const user = await User.findById(req.user._id);
-  
-      // Extract necessary data from the transaction
-      const { userId, operation: operationType, sum: operationSum } = transaction;
-  
-      // Calculate the new user balance by adding the operation sum to the current balance
-      let userBalance = user.balance;
-      userBalance += operationSum;
-  
-      // Update the user's balance in the database
-      user.balance = userBalance;
-      await user.save();
-  
-      // Return a response with status 201 (created) along with the new transaction data and the updated user balance
-      return res.status(201).json({ data: transaction, user: { balance: user.balance } });
-    } catch (error) {
-      // If an error occurs, handle it and send a 500 (Internal Server Error) response
-      console.error(error);
-      return res.status(500).json({ error: 'Internal Server Error' });
-    }
-  };
+const addIncome = async (req, res, next) => {
+  const transaction = await Transaction.create({
+    ...req.body,
+    userId: req.user._id,
+  });
 
-const addExpense =async  function(){
-    
-}
+  const user = await User.findById(req.user._id);
+  const oldBalance = user.balance;
 
-const getIncome = async function(){
-    
-}
+  const newBalance = oldBalance + req.body.amount;
 
-const getExpense = async function(){
-    
-}
+  await User.findByIdAndUpdate(req.user._id, { balance: newBalance });
 
-const deleteTransaction = async function(){
+  return res.status(201).json({
+    status: "success",
+    code: 201,
+    data: { transaction },
+  });
+};
+const addExpense = async (req, res, next) => {
+  const transaction = await Transaction.create({
+    ...req.body,
+    userId: req.user._id,
+  });
 
-}
+  const user = await User.findById(req.user._id);
+  const oldBalance = user.balance;
 
-const getIncomeCategories = async function(){
-    
-}
-const getTransactionsTimeData = async function(){
+  const newBalance = oldBalance - req.body.amount;
 
-}
+  await User.findByIdAndUpdate(req.user._id, { balance: newBalance });
 
-module.exports={ addIncome }
+  return res.status(201).json({
+    status: "success",
+    code: 201,
+    data: { transaction },
+  });
+};
+
+const getIncome = async function () {};
+
+const getExpense = async function () {};
+
+const deleteTransaction = async function () {};
+
+const getIncomeCategories = async function () {};
+const getTransactionsTimeData = async function () {};
+
+module.exports = { addIncome, addExpense };

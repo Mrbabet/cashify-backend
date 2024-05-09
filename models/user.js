@@ -37,14 +37,10 @@ const userSchema = new Schema(
       type: Boolean,
       default: false,
     },
-    transactions: [
-      {
-        description: String,
-        category: String,
-        amount: Number,
-        date: String,
-      },
-    ],
+    balance: {
+      type: Number,
+      default: 0,
+    },
   },
   { versionKey: false, timestamps: true }
 );
