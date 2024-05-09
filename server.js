@@ -3,6 +3,8 @@ const logger = require("morgan");
 const cors = require("cors");
 const mongoose = require("mongoose");
 require("dotenv").config();
+const passport = require("passport");
+const JwtStrategy = require("./config/jwt.js");
 
 const PORT = 8000;
 const DB_HOST = process.env.DB_HOST;
@@ -19,11 +21,13 @@ const formatsLogger = app.get("env") === "development" ? "dev" : "short";
 app.use(logger(formatsLogger));
 app.use(cors());
 app.use(express.json());
+app.use(passport.initialize());
+passport.use(JwtStrategy);
 
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 app.use("/auth", authRouter);
 app.use("/users", usersRouter);
-// app.use("/api/transaction", usersTransactionRouter);
+app.use("/transaction", usersTransactionRouter);
 
 // Error handling middleware
 app.use((req, res, next) => {

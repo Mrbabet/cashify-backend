@@ -8,9 +8,10 @@ require("dotenv").config();
 
 const register = async (req, res) => {
   const { error, value } = userSchema.validate(req.body);
+  const {email, password} = value
 
-  const user = await User.findOne({ email: value.email });
-  const avatarURL = gravatar.url(value.email);
+  const user = await User.findOne({email});
+  const avatarURL = gravatar.url(email);
   if (error) {
     return res.status(401).json({ message: error.message });
   }
@@ -67,26 +68,14 @@ const login = async (req, res) => {
         id: user._id,
         email: user.email,
       };
-      const accessToken = jwt.sign(payload, process.env.ACCESS_TOKEN_SECRET, {
+      const accessToken = jwt.sign(payload, process.env.SECRET_KEY, {
         expiresIn: "20s",
       });
       const refreshToken = jwt.sign(payload, process.env.REFRESH_TOKEN_SECRET, {
         expiresIn: "7d",
       });
 
-      user.accessToken = accessToken;
-      user.refreshToken = refreshToken;
-      user.save();
-      return res.status(200).send({
-        accessToken,
-        refreshToken,
-        userData: {
-          email: user.email,
-          balance: user.balance,
-          id: user._id,
-          transactions: user.transactions,
-        },
-      });
+      return res.json({ accessToken, refreshToken });
     } else {
       return res.status(401).json({ message: "Wrong password" });
     }
@@ -105,7 +94,7 @@ const logout = async (req, res) => {
     }
 
     user.accessToken = null;
-    user.refreshToken = null;
+    user.refreshToken = null
     await user.save();
 
     res.status(201).json({ message: "Logout successful" });
@@ -121,36 +110,24 @@ const refreshToken = async (req, res, next) => {
     return res.status(401).json({ message: "Refresh token is required" });
   }
   const splitToken = refreshToken.split(" ")[1];
-  jwt.verify(
-    splitToken,
-    process.env.REFRESH_TOKEN_SECRET,
-    async (err, decodedToken) => {
-      if (err) {
-        return res.status(403).json({ message: "Invalid token" });
-      }
-      const user = await User.findOne({ _id: decodedToken.id });
-      if (!user) {
-        return res.status(401).json({ message: "No such User" });
-      }
-      const payload = { id: user._id, email: user.email };
-
-      const accessToken = jwt.sign(payload, process.env.ACCESS_TOKEN_SECRET, {
-        expiresIn: "20s",
-      });
-      const newRefreshToken = jwt.sign(
-        payload,
-        process.env.REFRESH_TOKEN_SECRET,
-        {
-          expiresIn: "7d",
-        }
-      );
-      res.status(201).json({
-        message: "Token refreshed",
-        accessToken,
-        refreshToken: newRefreshToken,
-      });
+  jwt.verify(splitToken, process.env.REFRESH_TOKEN_SECRET, async (err, decodedToken) => {
+    if (err) {
+      return res.status(403).json({ message: "Invalid token" });
     }
-  );
+    const user = await User.findOne({ _id: decodedToken.id });
+    if (!user) {
+      return res.status(401).json({ message: "No such User" });
+    }
+    const payload = { id: user._id, email: user.email };
+
+    const accessToken = jwt.sign(payload, process.env.SECRET_KEY, {
+      expiresIn: "20s",
+    });
+    const newRefreshToken = jwt.sign(payload, process.env.REFRESH_TOKEN_SECRET, {
+      expiresIn: "7d",
+    });
+    res.status(201).json({ message: "Token refreshed", accessToken, refreshToken: newRefreshToken });
+  });
 };
 
 module.exports = {

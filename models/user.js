@@ -21,10 +21,6 @@ const userSchema = new Schema(
       type: String,
       default: null,
     },
-    balance: {
-      type: Number,
-      default: 0,
-    },
     verify: {
       type: Boolean,
       default: false,
@@ -37,18 +33,18 @@ const userSchema = new Schema(
       type: String,
       default: "",
     },
-    userName: {
-      type: String,
-      default: "",
-    },
     firstVisit: {
       type: Boolean,
       default: false,
     },
-    firstBalance: {
-      type: Boolean,
-      default: false,
-    },
+    transactions: [
+      {
+        description: String,
+        category: String,
+        amount: Number,
+        date: String,
+      },
+    ],
   },
   { versionKey: false, timestamps: true }
 );
