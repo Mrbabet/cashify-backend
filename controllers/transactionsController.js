@@ -1,4 +1,3 @@
-const { trace } = require("joi");
 const { Transaction } = require("../models/transactions");
 const { User } = require("../models/user");
 
@@ -81,28 +80,40 @@ const getIncome = async (req, res, next) => {
 };
 
 const deleteTransaction = async function (req, res) {
-  const user = await Transaction.findById({ _id, userId });
-  if (!user || user.length < 1) return false;
+  const transactionId = req.params.transactionId;
+  const userId = req.user._id;
 
-  const deleteTransaction = Transaction.findByIdAndDelete(_id);
+  const transaction = await Transaction.findById(transactionId);
 
-  if (deleteTransaction) {
-    const balance = req.user.balance;
-    const newBalance =
-      balance +
-      deleteTransaction.amount *
-        (deleteTransaction.transactionType === "expense" ? 1 : -1);
-
-    await User.findByIdAndUpdate(req.user._id, { balance: newBalance });
-
-    return res.status(200).json({
-      status: "success",
-      code: 200,
-      data: { deleteTransaction },
-      message: "Object deleted",
+  if (!transaction) {
+    return res.status(404).json({
+      status: "error",
+      code: 404,
+      message: "Transaction not found",
     });
   }
-  return res.json({ status: "error", code: 404, message: "Not found" });
+  const userIdString = userId.toString();
+  const transactionUserIdString = transaction.userId.toString();
+
+  if (userIdString !== transactionUserIdString) {
+    return res.status(403).json({
+      status: "error",
+      code: 403,
+      message: "Unauthorized",
+    });
+  }
+
+  await Transaction.findByIdAndDelete(transactionId);
+
+  const balanceChange = transaction.transactionType === "expense" ? 1 : -1;
+  const newBalance = req.user.balance + transaction.amount * balanceChange;
+  await User.findByIdAndUpdate(req.user._id, { balance: newBalance });
+
+  return res.status(200).json({
+    status: "success",
+    code: 200,
+    message: "Transaction deleted successfully",
+  });
 };
 
 const getIncomeCategories = async function () {};
