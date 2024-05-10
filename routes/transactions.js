@@ -26,8 +26,16 @@ router.delete(
   auth,
   ctrlWrapper(ctrlTransactions.deleteTransaction)
 );
-router.get("transaction/income-categories", auth);
-router.get("transaction/expense-categories", auth);
-router.get("transaction/period-data", auth);
+router.get(
+  "/income-categories",
+  auth,
+  ctrlWrapper(ctrlTransactions.getIncomeCategories)
+);
+router.get(
+  "/expense-categories",
+  auth,
+  ctrlWrapper(ctrlTransactions.getExpenseCategories)
+);
+router.get("/period-data", auth);
 
 module.exports = router;

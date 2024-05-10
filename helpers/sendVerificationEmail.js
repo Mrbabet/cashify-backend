@@ -5,7 +5,7 @@ const sendVerification = (user) => {
 
   const mailOptions = {
     from: "Your No-Reply Email <no-reply@example.com>", // Sender address
-    to: process.env.EMAIL, // Recipient's email address from environment variables
+    to: user.email, // Recipient's email address from environment variables
     subject: "Verify your email", // Subject line
     html: `
       <p>Hello user,</p>

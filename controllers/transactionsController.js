@@ -58,10 +58,26 @@ const getExpense = async (req, res, next) => {
     "_id date description amount category transactionType userId"
   );
 
+  const monthlyExpenses = {};
+
+  transactionExpense.forEach((transaction) => {
+    const date = new Date(transaction.date);
+    const monthYear = `${date.getMonth() + 1}-${date.getFullYear()}`;
+    if (!monthlyExpenses[monthYear]) {
+      monthlyExpenses[monthYear] = 0;
+    }
+    monthlyExpenses[monthYear] += transaction.amount;
+  });
+
+  const monthlyExpensesArray = Object.keys(monthlyExpenses).map((key) => ({
+    monthYear: key,
+    expenses: monthlyExpenses[key],
+  }));
+
   return res.status(201).json({
     status: "success",
     code: 201,
-    data: { userId, transactionExpense },
+    data: { userId, monthlyExpenses: monthlyExpensesArray },
   });
 };
 
@@ -72,10 +88,26 @@ const getIncome = async (req, res, next) => {
     "_id date description amount category transactionType userId"
   );
 
+  const monthlyIncome = {};
+
+  transactionIncome.forEach((transaction) => {
+    const date = new Date(transaction.date);
+    const monthYear = `${date.getMonth() + 1}-${date.getFullYear()}`;
+    if (!monthlyIncome[monthYear]) {
+      monthlyIncome[monthYear] = 0;
+    }
+    monthlyIncome[monthYear] += transaction.amount;
+  });
+
+  const monthlyIncomeArray = Object.keys(monthlyIncome).map((key) => ({
+    monthYear: key,
+    income: monthlyIncome[key],
+  }));
+
   return res.status(201).json({
     status: "success",
     code: 201,
-    data: { userId, transactionIncome },
+    data: { userId, monthlyIncome: monthlyIncomeArray },
   });
 };
 
@@ -116,7 +148,54 @@ const deleteTransaction = async function (req, res) {
   });
 };
 
-const getIncomeCategories = async function () {};
+const getIncomeCategories = async function (req, res) {
+  const categories = [
+    "products",
+    "alcohol",
+    "entertainment",
+    "health",
+    "transport",
+    "housing",
+    "technique",
+    "communal communication",
+    "sport, hobbies",
+    "education",
+    "other",
+    "salary",
+    "additional income",
+  ];
+
+  const incomeCategories = categories.filter(
+    (category) => category === "salary" || category === "additional income"
+  );
+
+  res.status(200).send(incomeCategories);
+  return incomeCategories;
+};
+const getExpenseCategories = async function (req, res) {
+  const categories = [
+    "products",
+    "alcohol",
+    "entertainment",
+    "health",
+    "transport",
+    "housing",
+    "technique",
+    "communal communication",
+    "sport, hobbies",
+    "education",
+    "other",
+    "salary",
+    "additional income",
+  ];
+
+  const incomeCategories = categories.filter(
+    (category) => category !== "salary" || category !== "additional income"
+  );
+
+  res.status(200).send(incomeCategories);
+  return incomeCategories;
+};
 const getTransactionsTimeData = async function () {};
 
 module.exports = {
@@ -125,4 +204,7 @@ module.exports = {
   getIncome,
   getExpense,
   deleteTransaction,
+  getIncomeCategories,
+  getExpenseCategories,
+  getTransactionsTimeData,
 };
