@@ -53,25 +53,35 @@ const addExpense = async (req, res, next) => {
 
 const getExpense = async (req, res, next) => {
   const userId = req.user._id;
-  const transactionExpense = await Transaction.find(
+  const transactionExpenses = await Transaction.find(
     { userId: userId, transactionType: "expense" },
     "_id date description amount category transactionType userId"
   );
 
   const monthlyExpenses = {};
 
-  transactionExpense.forEach((transaction) => {
+  transactionExpenses.forEach((transaction) => {
     const date = new Date(transaction.date);
     const monthYear = `${date.getMonth() + 1}-${date.getFullYear()}`;
     if (!monthlyExpenses[monthYear]) {
-      monthlyExpenses[monthYear] = 0;
+      monthlyExpenses[monthYear] = {};
     }
-    monthlyExpenses[monthYear] += transaction.amount;
+    if (!monthlyExpenses[monthYear][transaction.category]) {
+      monthlyExpenses[monthYear][transaction.category] = 0;
+    }
+    monthlyExpenses[monthYear][transaction.category] += transaction.amount;
   });
 
   const monthlyExpensesArray = Object.keys(monthlyExpenses).map((key) => ({
     monthYear: key,
-    expenses: monthlyExpenses[key],
+    expenses: Object.values(monthlyExpenses[key]).reduce(
+      (acc, curr) => acc + curr,
+      0
+    ),
+    categories: Object.keys(monthlyExpenses[key]).map((category) => ({
+      category: category,
+      amount: monthlyExpenses[key][category],
+    })),
   }));
 
   return res.status(201).json({
@@ -94,14 +104,24 @@ const getIncome = async (req, res, next) => {
     const date = new Date(transaction.date);
     const monthYear = `${date.getMonth() + 1}-${date.getFullYear()}`;
     if (!monthlyIncome[monthYear]) {
-      monthlyIncome[monthYear] = 0;
+      monthlyIncome[monthYear] = {};
     }
-    monthlyIncome[monthYear] += transaction.amount;
+    if (!monthlyIncome[monthYear][transaction.category]) {
+      monthlyIncome[monthYear][transaction.category] = 0;
+    }
+    monthlyIncome[monthYear][transaction.category] += transaction.amount;
   });
 
   const monthlyIncomeArray = Object.keys(monthlyIncome).map((key) => ({
     monthYear: key,
-    income: monthlyIncome[key],
+    income: Object.values(monthlyIncome[key]).reduce(
+      (acc, curr) => acc + curr,
+      0
+    ),
+    categories: Object.keys(monthlyIncome[key]).map((category) => ({
+      category: category,
+      amount: monthlyIncome[key][category],
+    })),
   }));
 
   return res.status(201).json({
