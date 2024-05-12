@@ -55,7 +55,7 @@ const login = async (req, res) => {
       email: user.email,
     };
     const accessToken = jwt.sign(payload, process.env.ACCESS_TOKEN_SECRET, {
-      expiresIn: "1d",
+      expiresIn: "30s",
     });
     const refreshToken = jwt.sign(payload, process.env.REFRESH_TOKEN_SECRET, {
       expiresIn: "7d",
@@ -112,7 +112,7 @@ const refreshToken = async (req, res, next) => {
       const payload = { id: user._id, email: user.email };
 
       const accessToken = jwt.sign(payload, process.env.ACCESS_TOKEN_SECRET, {
-        expiresIn: "1d",
+        expiresIn: "30s",
       });
       const newRefreshToken = jwt.sign(
         payload,
@@ -124,6 +124,12 @@ const refreshToken = async (req, res, next) => {
       user.accessToken = accessToken;
       user.refreshToken = newRefreshToken;
       user.save();
+
+      res.cookie("refreshToken", newRefreshToken, {
+        httpOnly: true,
+        secure: true,
+        sameSite: "strict",
+      });
 
       res.status(201).json({
         message: "Token refreshed",

@@ -1,12 +1,13 @@
 const passport = require("passport");
 
 const authMiddleware = async (req, res, next) => {
-  passport.authenticate("jwt", { session: false }, (err, user) => {
-    req.user = user;
-    if (!user || err) {
-      console.log(user, err);
-      return res.status(401).json({ message: "Unauthorized" });
+  passport.authenticate("jwt", { session: false }, (err, user, info) => {
+    if (err || !user) {
+      console.error(err || info);
+      return res.status(401).json({ message: `Unauthorized :${info}` });
     }
+
+    req.user = user;
     next();
   })(req, res, next);
 };
