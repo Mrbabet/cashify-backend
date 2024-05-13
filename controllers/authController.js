@@ -80,24 +80,35 @@ const login = async (req, res) => {
 };
 
 const logout = async (req, res) => {
+  const refreshToken = req.cookies?.jwt;
 
-  const userId = req.user._id;
-  const user = await User.findById(userId);
-  const refreshToken = req.cookies?.jwt; 
-
+  // Check if there is no refresh token, then return 204 No Content
   if (!refreshToken) return res.sendStatus(204);
 
+  try {
+    // Find user based on refresh token
+    const user = await User.findOne({ refreshToken });
 
-  if (!user) {
-    res.clearCookie('jwt',{ httpOnly: true, sameSite: 'None', secure: true, maxAge: 24 * 60 * 60 * 1000 })
-    return res.status(401).json({ message: "Not authorized" });
+    // If user not found, clear the cookie and return 401 Unauthorized
+    if (!user) {
+      res.clearCookie('jwt', { httpOnly: true, sameSite: 'None', secure: true });
+      return res.status(401).json({ message: "Not authorized" });
+    }
+
+    // Reset user's access and refresh tokens
+    user.accessToken = null;
+    user.refreshToken = null;
+    await user.save();
+
+    // Clear JWT cookie and return 200 OK
+    res.clearCookie('jwt', { httpOnly: true, sameSite: 'None', secure: true });
+    return res.status(200).json({ message: "Logout successful" });
+  } catch (error) {
+    console.error("Error during logout:", error);
+    return res.status(500).json({ message: "Internal Server Error" });
   }
-  user.accessToken = null;
-  user.refreshToken = null;
-  await user.save();
-  res.clearCookie('jwt', { httpOnly: true, sameSite: 'None', secure: true });
-  res.status(201).json({ message: "Logout successful" });
 };
+
 
 
 module.exports = {
