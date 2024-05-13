@@ -1,7 +1,7 @@
 const express = require("express");
 const logger = require("morgan");
 const cors = require("cors");
-const corsOptions = require('./config/corsOptions');
+const corsOptions = require("./config/corsOptions");
 const mongoose = require("mongoose");
 require("dotenv").config();
 const PORT = 8000;
@@ -11,8 +11,10 @@ const usersRouter = require("./routes/users");
 const usersTransactionRouter = require("./routes/transactions");
 const swaggerUi = require("swagger-ui-express");
 const swaggerDocument = require("./swagger-output.json");
-const verifyJWT = require('./middlewares/jwt.js')
-const cookieParser = require('cookie-parser');
+const cookieParser = require("cookie-parser");
+const auth = require("./middlewares/auth");
+const passport = require("passport");
+const JwtStrategy = require("./config/jwt.js");
 
 const app = express();
 
@@ -21,12 +23,14 @@ const formatsLogger = app.get("env") === "development" ? "dev" : "short";
 app.use(logger(formatsLogger));
 app.use(cors());
 app.use(express.json());
+app.use(passport.initialize());
+passport.use(JwtStrategy);
 
 app.use(cookieParser());
 
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 app.use("/auth", authRouter);
-app.use(verifyJWT)
+app.use(auth);
 app.use("/users", usersRouter);
 app.use("/transaction", usersTransactionRouter);
 
