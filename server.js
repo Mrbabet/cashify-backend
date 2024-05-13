@@ -19,7 +19,7 @@ const app = express();
 const formatsLogger = app.get("env") === "development" ? "dev" : "short";
 
 app.use(logger(formatsLogger));
-app.use(cors(corsOptions));
+app.use(cors());
 app.use(express.json());
 
 app.use(cookieParser());
