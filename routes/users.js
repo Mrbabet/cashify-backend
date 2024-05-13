@@ -1,6 +1,6 @@
 const express = require("express");
 
-const auth = require("../middlewares/auth");
+const auth = require("../middlewares/jwt");
 const ctrlUser = require("../controllers/userController");
 const ctrlWrapper = require("../helpers/ctrlWrapper");
 
