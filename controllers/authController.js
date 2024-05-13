@@ -55,15 +55,16 @@ const login = async (req, res) => {
       email: user.email,
     };
     const accessToken = jwt.sign(payload, process.env.ACCESS_TOKEN_SECRET, {
-      expiresIn: "30s",
+      expiresIn: "1d",
     });
     const refreshToken = jwt.sign(payload, process.env.REFRESH_TOKEN_SECRET, {
       expiresIn: "7d",
     });
-
+    res.cookie('jwt', refreshToken, { httpOnly: true, sameSite: 'None', secure: true, maxAge: 24 * 60 * 60 * 1000 });
     user.accessToken = accessToken;
     user.refreshToken = refreshToken;
     user.save();
+  
     return res.status(200).send({
       accessToken,
       refreshToken,
@@ -79,70 +80,39 @@ const login = async (req, res) => {
 };
 
 const logout = async (req, res) => {
-  const userId = req.user._id;
-  const user = await User.findById(userId);
-  if (!user) {
-    return res.status(401).json({ message: "Not authorized" });
-  }
+  const refreshToken = req.cookies?.jwt;
 
-  user.accessToken = null;
-  user.refreshToken = null;
-  await user.save();
+  // Check if there is no refresh token, then return 204 No Content
+  if (!refreshToken) return res.sendStatus(204);
 
-  res.status(201).json({ message: "Logout successful" });
-};
-const refreshToken = async (req, res, next) => {
-  const refreshToken = req.headers.authorization;
+  try {
+    // Find user based on refresh token
+    const user = await User.findOne({ refreshToken });
 
-  if (!refreshToken) {
-    return res.status(401).json({ message: "Refresh token is required" });
-  }
-  const splitToken = refreshToken.split(" ")[1];
-  jwt.verify(
-    splitToken,
-    process.env.REFRESH_TOKEN_SECRET,
-    async (err, decodedToken) => {
-      if (err) {
-        return res.status(403).json({ message: "Invalid token" });
-      }
-      const user = await User.findOne({ _id: decodedToken.id });
-      if (!user) {
-        return res.status(401).json({ message: "No such User" });
-      }
-      const payload = { id: user._id, email: user.email };
-
-      const accessToken = jwt.sign(payload, process.env.ACCESS_TOKEN_SECRET, {
-        expiresIn: "30s",
-      });
-      const newRefreshToken = jwt.sign(
-        payload,
-        process.env.REFRESH_TOKEN_SECRET,
-        {
-          expiresIn: "7d",
-        }
-      );
-      user.accessToken = accessToken;
-      user.refreshToken = newRefreshToken;
-      user.save();
-
-      res.cookie("refreshToken", newRefreshToken, {
-        httpOnly: true,
-        secure: true,
-        sameSite: "strict",
-      });
-
-      res.status(201).json({
-        message: "Token refreshed",
-        accessToken,
-        refreshToken: newRefreshToken,
-      });
+    // If user not found, clear the cookie and return 401 Unauthorized
+    if (!user) {
+      res.clearCookie('jwt', { httpOnly: true, sameSite: 'None', secure: true });
+      return res.status(401).json({ message: "Not authorized" });
     }
-  );
+
+    // Reset user's access and refresh tokens
+    user.accessToken = null;
+    user.refreshToken = null;
+    await user.save();
+
+    // Clear JWT cookie and return 200 OK
+    res.clearCookie('jwt', { httpOnly: true, sameSite: 'None', secure: true });
+    return res.status(200).json({ message: "Logout successful" });
+  } catch (error) {
+    console.error("Error during logout:", error);
+    return res.status(500).json({ message: "Internal Server Error" });
+  }
 };
+
+
 
 module.exports = {
   login,
   register,
   logout,
-  refreshToken,
 };
