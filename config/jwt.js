@@ -21,6 +21,4 @@ const jwtStrategy = new JwtStrategy(options, async function (payload, done) {
   }
 });
 
-passport.use(jwtStrategy);
-
 module.exports = jwtStrategy;
