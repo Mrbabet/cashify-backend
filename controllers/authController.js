@@ -68,7 +68,7 @@ const login = async (req, res) => {
     return res.status(200).send({
       accessToken,
       refreshToken,
-      userData: {
+      user: {
         email,
         balance: user.balance,
         id: user._id,
