@@ -1,10 +1,12 @@
 const { User } = require("../models/user");
 
 const getCurrent = async (req, res) => {
-  const { email } = req.user;
+  const { email, balance, _id: id } = req.user;
 
   res.status(200).json({
     email,
+    balance,
+    id,
   });
 };
 const updateUserBalance = async (req, res) => {
