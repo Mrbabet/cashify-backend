@@ -52,85 +52,61 @@ const addExpense = async (req, res, next) => {
 };
 
 const getExpense = async (req, res, next) => {
-  const userId = req.user._id;
-  const transactionExpenses = await Transaction.find(
-    { userId: userId, transactionType: "expense" },
-    "_id date description amount category transactionType userId"
-  );
+  try {
+    const userId = req.user._id;
+    const transactionExpense = await Transaction.find(
+      { userId: userId, transactionType: "expense" },
+      "_id date description amount category transactionType userId"
+    );
 
-  const monthlyExpenses = {};
+    const expenseArray = transactionExpense.map((transaction) => ({
+      transactionId: transaction._id,
+      date: transaction.date,
+      description: transaction.description,
+      category: transaction.category,
+      amount: transaction.amount,
+    }));
 
-  transactionExpenses.forEach((transaction) => {
-    const date = new Date(transaction.date);
-    const monthYear = `${date.getMonth() + 1}-${date.getFullYear()}`;
-    if (!monthlyExpenses[monthYear]) {
-      monthlyExpenses[monthYear] = {};
-    }
-    if (!monthlyExpenses[monthYear][transaction.category]) {
-      monthlyExpenses[monthYear][transaction.category] = 0;
-    }
-    monthlyExpenses[monthYear][transaction.category] += transaction.amount;
-  });
+    // Calculate monthly expenses
+    const monthStats = calculateMonthlyExpenses(transactionExpense);
 
-  const monthlyExpensesArray = Object.keys(monthlyExpenses).map((key) => ({
-    monthYear: key,
-    expenses: Object.values(monthlyExpenses[key]).reduce(
-      (acc, curr) => acc + curr,
-      0
-    ),
-    categories: Object.keys(monthlyExpenses[key]).map((category) => ({
-      category: category,
-      amount: monthlyExpenses[key][category],
-    })),
-  }));
-
-  return res.status(201).json({
-    status: "success",
-    code: 201,
-    data: { userId, monthlyExpenses: monthlyExpensesArray },
-  });
+    return res.status(200).json({
+      status: "success",
+      code: 200,
+      data: { userId, expenses: expenseArray, monthStats },
+    });
+  } catch (error) {
+    next(error);
+  }
 };
 
 const getIncome = async (req, res, next) => {
-  const userId = req.user._id;
-  const transactionIncome = await Transaction.find(
-    { userId: userId, transactionType: "income" },
-    "_id date description amount category transactionType userId"
-  );
+  try {
+    const userId = req.user._id;
+    const transactionIncome = await Transaction.find(
+      { userId: userId, transactionType: "income" },
+      "_id date description amount category transactionType userId"
+    );
 
-  const monthlyIncome = {};
+    const incomeArray = transactionIncome.map((transaction) => ({
+      transactionId: transaction._id,
+      date: transaction.date,
+      description: transaction.description,
+      category: transaction.category,
+      amount: transaction.amount,
+    }));
 
-  transactionIncome.forEach((transaction) => {
-    const date = new Date(transaction.date);
-    const monthYear = `${date.getMonth() + 1}-${date.getFullYear()}`;
-    if (!monthlyIncome[monthYear]) {
-      monthlyIncome[monthYear] = {};
-    }
-    if (!monthlyIncome[monthYear][transaction.category]) {
-      monthlyIncome[monthYear][transaction.category] = 0;
-    }
-    monthlyIncome[monthYear][transaction.category] += transaction.amount;
-  });
+    const monthStats = calculateMonthlyExpenses(transactionIncome);
 
-  const monthlyIncomeArray = Object.keys(monthlyIncome).map((key) => ({
-    monthYear: key,
-    income: Object.values(monthlyIncome[key]).reduce(
-      (acc, curr) => acc + curr,
-      0
-    ),
-    categories: Object.keys(monthlyIncome[key]).map((category) => ({
-      category: category,
-      amount: monthlyIncome[key][category],
-    })),
-  }));
-
-  return res.status(201).json({
-    status: "success",
-    code: 201,
-    data: { userId, monthlyIncome: monthlyIncomeArray },
-  });
+    return res.status(200).json({
+      status: "success",
+      code: 200,
+      data: { userId, income: incomeArray, monthStats },
+    });
+  } catch (error) {
+    next(error);
+  }
 };
-
 const deleteTransaction = async function (req, res) {
   const transactionId = req.params.transactionId;
   const userId = req.user._id;
@@ -205,8 +181,6 @@ const getExpenseCategories = async function (req, res) {
     "sport, hobbies",
     "education",
     "other",
-    "salary",
-    "additional income",
   ];
 
   const incomeCategories = categories.filter(
@@ -217,6 +191,54 @@ const getExpenseCategories = async function (req, res) {
   return incomeCategories;
 };
 const getTransactionsTimeData = async function () {};
+
+const calculateMonthlyExpenses = (transactions) => {
+  const monthStats = {
+    January: "N/A",
+    February: "N/A",
+    March: "N/A",
+    April: "N/A",
+    May: "N/A",
+    June: "N/A",
+    July: "N/A",
+    August: "N/A",
+    September: "N/A",
+    October: "N/A",
+    November: "N/A",
+    December: "N/A",
+  };
+
+  transactions.forEach((transaction) => {
+    // Ensure transaction.date is parsed into a Date object
+    const date = new Date(transaction.date);
+    const month = date.getMonth();
+    const monthName = getMonthName(month);
+    if (monthStats[monthName] === "N/A") {
+      monthStats[monthName] = 0;
+    }
+    monthStats[monthName] += transaction.amount;
+  });
+
+  return monthStats;
+};
+
+const getMonthName = (monthIndex) => {
+  const monthNames = [
+    "January",
+    "February",
+    "March",
+    "April",
+    "May",
+    "June",
+    "July",
+    "August",
+    "September",
+    "October",
+    "November",
+    "December",
+  ];
+  return monthNames[monthIndex];
+};
 
 module.exports = {
   addIncome,
