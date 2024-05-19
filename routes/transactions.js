@@ -33,6 +33,9 @@ router.get(
 
   ctrlWrapper(ctrlTransactions.getExpenseCategories)
 );
-router.get("/period-data");
+router.get(
+  "/period-data",
+  ctrlWrapper(ctrlTransactions.getTransactionsDataForPeriod)
+);
 
 module.exports = router;

@@ -145,21 +145,7 @@ const deleteTransaction = async function (req, res) {
 };
 
 const getIncomeCategories = async function (req, res) {
-  const categories = [
-    "products",
-    "alcohol",
-    "entertainment",
-    "health",
-    "transport",
-    "housing",
-    "technique",
-    "communal communication",
-    "sport, hobbies",
-    "education",
-    "other",
-    "salary",
-    "additional income",
-  ];
+  const categories = [, "salary", "additional income"];
 
   const incomeCategories = categories.filter(
     (category) => category === "salary" || category === "additional income"
@@ -177,8 +163,8 @@ const getExpenseCategories = async function (req, res) {
     "transport",
     "housing",
     "technique",
-    "communal communication",
-    "sport, hobbies",
+    "communal",
+    "sport",
     "education",
     "other",
   ];
@@ -190,7 +176,80 @@ const getExpenseCategories = async function (req, res) {
   res.status(200).send(incomeCategories);
   return incomeCategories;
 };
-const getTransactionsTimeData = async function () {};
+
+const getTransactionsDataForPeriod = async (req, res, next) => {
+  try {
+    const { date } = req.query;
+    const userId = req.user._id;
+
+    // Fetch transactions for the user within the specified period
+    const userTransactions = await Transaction.find({ userId });
+
+    // Separate transactions into income and expense arrays based on the specified period
+    const incomeTransactions = userTransactions
+      .filter((transaction) => isWithinPeriod(transaction.date, date))
+      .filter(
+        (transaction) =>
+          transaction.category === "salary" ||
+          transaction.category === "additional income"
+      );
+
+    const expenseTransactions = userTransactions
+      .filter((transaction) => isWithinPeriod(transaction.date, date))
+      .filter(
+        (transaction) =>
+          transaction.category !== "salary" &&
+          transaction.category !== "additional income"
+      );
+
+    // Calculate totals for income and expenses
+    const incomesData = calculateTransactionTotals(incomeTransactions);
+    const expensesData = calculateTransactionTotals(expenseTransactions);
+
+    const incomeTotal = Object.values(incomesData).reduce(
+      (acc, { total }) => acc + total,
+      0
+    );
+    const expenseTotal = Object.values(expensesData).reduce(
+      (acc, { total }) => acc + total,
+      0
+    );
+
+    // Return the data
+    return res.status(200).json({
+      incomes: { incomeTotal, incomesData },
+      expenses: { expenseTotal, expensesData },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+const isWithinPeriod = (transactionDate, period) => {
+  const transactionMonth = transactionDate.substring(0, 7);
+  return transactionMonth === period;
+};
+
+const calculateTransactionTotals = (transactions) => {
+  const data = {};
+  transactions.forEach((transaction) => {
+    const { category, description, amount } = transaction;
+    if (!data[category]) {
+      data[category] = {
+        total: amount,
+        [description]: amount,
+      };
+    } else {
+      data[category].total += amount;
+      if (!data[category][description]) {
+        data[category][description] = amount;
+      } else {
+        data[category][description] += amount;
+      }
+    }
+  });
+  return data;
+};
 
 const calculateMonthlyExpenses = (transactions) => {
   const monthStats = {
@@ -248,5 +307,5 @@ module.exports = {
   deleteTransaction,
   getIncomeCategories,
   getExpenseCategories,
-  getTransactionsTimeData,
+  getTransactionsDataForPeriod,
 };
