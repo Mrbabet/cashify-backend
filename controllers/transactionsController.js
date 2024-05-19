@@ -145,10 +145,10 @@ const deleteTransaction = async function (req, res) {
 };
 
 const getIncomeCategories = async function (req, res) {
-  const categories = [, "salary", "additional income"];
+  const categories = [, "salary", "investments"];
 
   const incomeCategories = categories.filter(
-    (category) => category === "salary" || category === "additional income"
+    (category) => category === "salary" || category === "investments"
   );
 
   res.status(200).send(incomeCategories);
@@ -170,7 +170,7 @@ const getExpenseCategories = async function (req, res) {
   ];
 
   const incomeCategories = categories.filter(
-    (category) => category !== "salary" || category !== "additional income"
+    (category) => category !== "salary" || category !== "investments"
   );
 
   res.status(200).send(incomeCategories);
@@ -191,7 +191,7 @@ const getTransactionsDataForPeriod = async (req, res, next) => {
       .filter(
         (transaction) =>
           transaction.category === "salary" ||
-          transaction.category === "additional income"
+          transaction.category === "investments"
       );
 
     const expenseTransactions = userTransactions
@@ -199,7 +199,7 @@ const getTransactionsDataForPeriod = async (req, res, next) => {
       .filter(
         (transaction) =>
           transaction.category !== "salary" &&
-          transaction.category !== "additional income"
+          transaction.category !== "investments"
       );
 
     // Calculate totals for income and expenses

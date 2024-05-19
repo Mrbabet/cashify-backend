@@ -30,7 +30,7 @@ const transactionSchema = Schema({
       "education",
       "other",
       "salary",
-      "additional income",
+      "investments",
     ],
   },
   transactionType: {
