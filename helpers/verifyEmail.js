@@ -1,4 +1,5 @@
 const { User } = require("../models/user");
+
 const verifyEmail = async (req, res) => {
   try {
     const { verificationToken } = req.params;
@@ -13,17 +14,18 @@ const verifyEmail = async (req, res) => {
       user.verify = true;
 
       await user.save();
-      res.status(200).json({
-        user: {
-          email: user.email,
-          verificationToken: user.verificationToken,
-          verify: user.verify,
-        },
-      });
+
+      // Redirect to a confirmation page after successful verification
+      return res.redirect(
+        "https://cashify-fullstack-project.vercel.app/welcome"
+      );
+    } else {
+      return res.status(404).json({ message: "User not found..." });
     }
   } catch (error) {
-    console.error("Registration error:", error);
+    console.error("Verification error:", error);
     res.status(500).json({ message: "Internal server error" });
   }
 };
+
 module.exports = { verifyEmail };
