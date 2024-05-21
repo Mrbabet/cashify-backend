@@ -17,7 +17,7 @@ const verifyEmail = async (req, res) => {
 
       // Redirect to a confirmation page after successful verification
       return res.redirect(
-        "https://cashify-fullstack-project.vercel.app/welcome"
+        "https://cashify-fullstack-project.vercel.app"
       );
     } else {
       return res.status(404).json({ message: "User not found..." });
