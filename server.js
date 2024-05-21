@@ -22,8 +22,8 @@ const formatsLogger = app.get("env") === "development" ? "dev" : "short";
 
 app.use(logger(formatsLogger));
 app.use(cors({
-  origin:'https://cashify-fullstack-project.vercel.app',
-  credentials: true
+  origin:['https://cashify-fullstack-project.vercel.app', 'http://localhost:3000','http://localhost:8000'],
+  credentials:true
 }));
 app.use(express.json());
 app.use(passport.initialize());
