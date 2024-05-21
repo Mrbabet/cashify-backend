@@ -36,7 +36,6 @@ const refreshToken = async (req, res, next) => {
       user.refreshToken = refreshToken;
       user.save();
 
-      // Send the new access token and refresh token in the response
 
       res.json({ accessToken, refreshToken });
     }

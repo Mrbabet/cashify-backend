@@ -33,10 +33,7 @@ const userSchema = new Schema(
       type: String,
       default: "",
     },
-    firstVisit: {
-      type: Boolean,
-      default: false,
-    },
+    loginCount: { type: Number, default: 0 },
     balance: {
       type: Number,
       default: 0,
