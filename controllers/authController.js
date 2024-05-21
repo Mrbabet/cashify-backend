@@ -37,9 +37,6 @@ const login = async (req, res) => {
 
   const user = await User.findOne({ email });
 
-
-
-
   if (!user) {
     return res.status(401).json({ message: "Email or password is wrong" });
   }
@@ -63,7 +60,7 @@ const login = async (req, res) => {
     });
     res.cookie('jwt', refreshToken, { httpOnly: true, sameSite: 'None', secure: true, maxAge: 24 * 60 * 60 * 1000 });
 
-    user.loginCount+=1
+    user.loginCount +=1
     user.accessToken = accessToken;
     user.refreshToken = refreshToken;
     user.save();
@@ -75,6 +72,7 @@ const login = async (req, res) => {
         email,
         balance: user.balance,
         id: user._id,
+        loginCount: user.loginCount
       },
     });
   } else {
